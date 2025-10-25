@@ -113,7 +113,8 @@ app.get('/files/list', (req, res) => {
 
 // Start server
 const PORT = config.server.port;
-const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+// Bind to 0.0.0.0 in production/Railway, localhost for local dev
+const HOST = process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`\n🚀 File-Based AI Agent running on http://${HOST}:${PORT}`);
