@@ -388,7 +388,7 @@ Answer:`;
           // Send follow-up message with social embeds
           const socialMessage = relevantLinks.length === 1
             ? `🎥 Here's a video about ${relevantLinks[0].name}!`
-            : `🎥 Here are some videos about these places!`;
+            : `🎥 Here are ${relevantLinks.length} videos about these places!`;
 
           await brandonEatsClient.sendMessage(
             chatId,

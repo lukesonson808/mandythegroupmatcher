@@ -39,6 +39,32 @@ Quick test for sending social shares to a specific chat.
 TEST_CHAT_ID=your_chat_id node tests/test-social-shares-quick.js
 ```
 
+### test-video-deduplication.js
+Test that duplicate videos (same URL) are filtered out.
+
+**What it tests:**
+- Multiple restaurants sharing the same TikTok URL
+- Deduplication logic removes duplicate URLs
+- Only one video per unique URL is sent
+
+**Usage:**
+```bash
+node tests/test-video-deduplication.js
+```
+
+### test-multiple-unique-videos.js
+Test that multiple unique videos are all properly returned.
+
+**What it tests:**
+- Multiple restaurants with different TikTok URLs
+- All unique videos are included
+- No over-filtering of valid videos
+
+**Usage:**
+```bash
+node tests/test-multiple-unique-videos.js
+```
+
 ---
 
 ## Running Tests

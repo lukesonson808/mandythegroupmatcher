@@ -224,8 +224,19 @@ Return only the names, nothing else:`;
         }))
         .filter(link => link.url); // Ensure URL exists
 
+      // Deduplicate by URL - keep only the first occurrence of each unique URL
+      const seenUrls = new Set();
+      const uniqueLinks = relevantLinks.filter(link => {
+        if (seenUrls.has(link.url)) {
+          console.log(`   ℹ️  Skipping duplicate URL for ${link.name}: ${link.url}`);
+          return false;
+        }
+        seenUrls.add(link.url);
+        return true;
+      });
+
       // Limit to max 5 links to avoid overwhelming the user
-      const limitedLinks = relevantLinks.slice(0, 5);
+      const limitedLinks = uniqueLinks.slice(0, 5);
 
       if (limitedLinks.length > 0) {
         console.log(`✅ Found ${limitedLinks.length} relevant social links`);
