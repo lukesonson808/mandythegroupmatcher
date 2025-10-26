@@ -4,13 +4,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const claudeWebhookHandler = require('./webhooks/claude-webhook');
 const brandonEatsWebhookHandler = require('./webhooks/brandoneats-webhook');
+const makeupArtistWebhookHandler = require('./webhooks/makeup-artist-webhook');
 const { getBaseFileInfo, getAllAgentFiles, listUploadedFiles } = require('./services/file-upload');
+const imageStorage = require('./services/image-storage');
 
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Static file serving for generated images
+app.use('/temp-images', express.static(imageStorage.getTempDirPath()));
 
 // Request logging
 app.use((req, res, next) => {
@@ -40,9 +45,11 @@ app.get('/', (req, res) => {
       health: 'GET /health',
       claudeDocubot: 'POST /webhook/claude',
       brandonEatsWebhook: 'POST /webhook/brandoneats',
+      makeupArtist: 'POST /webhook/makeup-artist',
       filesBaseAll: 'GET /files/base',
       filesBaseAgent: 'GET /files/base/:agent',
-      filesList: 'GET /files/list'
+      filesList: 'GET /files/list',
+      tempImages: 'GET /temp-images/:filename'
     }
   });
 });
@@ -52,6 +59,9 @@ app.post('/webhook/claude', claudeWebhookHandler);
 
 // Brandon Eats specialized webhook endpoint
 app.post('/webhook/brandoneats', brandonEatsWebhookHandler);
+
+// Makeup Artist webhook endpoint (with Gemini image generation)
+app.post('/webhook/makeup-artist', makeupArtistWebhookHandler);
 
 // File management endpoints
 app.get('/files/base', (req, res) => {
@@ -160,10 +170,12 @@ const server = app.listen(PORT, HOST, async () => {
   console.log(`\nWebhook Endpoints:`);
   console.log(`  POST /webhook/claude        - Claude DocuBot (generic file reference agent)`);
   console.log(`  POST /webhook/brandoneats   - Brandon Eats data analyst (specialized)`);
+  console.log(`  POST /webhook/makeup-artist - Makeup Artist with Gemini image generation`);
   console.log(`  GET  /health                - Health check`);
   console.log(`  GET  /files/base            - Get base files for all agents`);
   console.log(`  GET  /files/base/:agent     - Get base file for specific agent`);
-  console.log(`  GET  /files/list            - List all uploaded files\n`);
+  console.log(`  GET  /files/list            - List all uploaded files`);
+  console.log(`  GET  /temp-images/:filename - Generated images\n`);
   console.log(`Configuration:`);
   console.log(`  Gemini API: ${config.gemini.apiKey.includes('your_') ? '❌ Not configured' : '✅ Configured'}`);
   console.log(`  Claude API: ${config.claude.apiKey.includes('your_') ? '❌ Not configured' : '✅ Configured'}`);
@@ -171,6 +183,16 @@ const server = app.listen(PORT, HOST, async () => {
   
   // Initialize files after server starts
   await initializeFiles();
+  
+  // Optional: Schedule cleanup of old images (run daily at 3 AM)
+  const schedule = require('node:timers');
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() === 3 && now.getMinutes() === 0) {
+      console.log('🧹 Running scheduled image cleanup...');
+      imageStorage.cleanupOldImages(24); // Delete images older than 24 hours
+    }
+  }, 60000); // Check every minute
 });
 
 // Error handling

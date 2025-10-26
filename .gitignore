@@ -35,6 +35,10 @@ Thumbs.db
 # files/*
 # !files/.gitkeep
 
+# Generated images (temporary)
+temp-images/
+!temp-images/.gitkeep
+
 # Replit specific
 .replit
 .upm/

@@ -15,8 +15,9 @@ Multi-model AI agent system with file-aware capabilities, powered by **Claude** 
 - Go to A1Zap app → Make → Agent API
 - Create your agent → Copy your API Key and Agent ID
 
-**Gemini API Key** (Optional):
+**Gemini API Key** (Required for Makeup Artist):
 - Visit [Google AI Studio](https://aistudio.google.com/apikey)
+- Required for makeup artist image generation
 - Provides additional model flexibility
 
 ### 2. Deploy
@@ -71,6 +72,7 @@ npm run upload files/brandoneats.csv
 In A1Zap app → Select your agent → Set webhook URL:
 - For generic file operations: `https://your-server.com/webhook/claude`
 - For Brandon Eats data: `https://your-server.com/webhook/brandoneats`
+- For makeup artist (image generation): `https://your-server.com/webhook/makeup-artist`
 
 ### 5. Test It! 🎉
 
@@ -149,7 +151,7 @@ curl http://localhost:3000/files/list
 
 ---
 
-## 🎯 Two Specialized Agents
+## 🎯 Three Specialized Agents
 
 ### 1. Generic File Agent (`/webhook/claude`)
 General-purpose document-aware agent:
@@ -172,6 +174,17 @@ Specialized for restaurant/food data:
 **📖 See `INTELLIGENT_FILTERING.md` for details on the smart triage and filtering system.**  
 **📖 See `ALTERNATIVE_SUGGESTIONS.md` for details on contextual alternative suggestions.**
 
+### 3. Makeup Artist 💄 (`/webhook/makeup-artist`)
+AI makeup artist with image generation capabilities:
+- Apply cosmetic changes to uploaded images using Gemini's image generation
+- **Multi-turn conversations** - iteratively refine makeup looks ("make it darker", "add more blush")
+- Natural language requests (e.g., "add red lipstick", "give me a smokey eye")
+- Professional guidance with helpful examples and suggestions
+- Automatic image storage and delivery
+
+**Agent Config:** `agents/makeup-artist-agent.js`  
+**📖 See `MAKEUP_ARTIST_AGENT.md` for complete documentation and usage examples.**
+
 ---
 
 ## 🛠️ Project Structure
@@ -179,19 +192,23 @@ Specialized for restaurant/food data:
 ```
 agents/
   ├── claude-docubot-agent.js      # Generic file agent config
-  └── brandoneats-agent.js         # Brandon Eats agent config
+  ├── brandoneats-agent.js         # Brandon Eats agent config
+  └── makeup-artist-agent.js       # Makeup Artist agent config
 
 webhooks/
   ├── claude-webhook.js            # Generic file handler
-  └── brandoneats-webhook.js       # Brandon Eats handler
+  ├── brandoneats-webhook.js       # Brandon Eats handler
+  └── makeup-artist-webhook.js     # Makeup Artist handler
 
 services/
   ├── claude-service.js            # Claude API integration
-  ├── gemini-service.js            # Gemini API integration
+  ├── gemini-service.js            # Gemini API integration (+ image generation)
   ├── a1zap-client.js              # A1Zap messaging client
   ├── brandoneats-client.js        # Brandon Eats specialized client
   ├── file-upload.js               # File upload utility
   ├── file-registry.js             # File storage manager
+  ├── image-storage.js             # Image storage utilities
+  ├── webhook-helpers.js           # Shared webhook utilities
   └── social-link-extractor.js     # Social media detection
 
 examples/                          # Example scripts
@@ -201,9 +218,11 @@ examples/                          # Example scripts
 tests/                             # Test scripts
   ├── test-social-links.js         # Social link extraction tests
   ├── test-rich-content.js         # Rich content tests
-  └── test-social-shares-quick.js  # Quick social share test
+  ├── test-social-shares-quick.js  # Quick social share test
+  └── test-makeup-artist.js        # Makeup Artist tests
 
 files/                             # Uploaded files directory
+temp-images/                       # Generated images storage
 config.js                          # Environment configuration
 server.js                          # Main Express server
 ```
