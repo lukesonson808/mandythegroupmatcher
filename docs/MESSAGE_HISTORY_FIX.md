@@ -6,7 +6,7 @@ The makeup artist agent was getting **500 Internal Server Error** when trying to
 
 ```
 ❌ Error fetching message history:
-   URL: https://api.a1zap.com/v1/messages/individual/j974khr39n4esba376mjawp2jh7t69f3/chat/m979pnqwpfksma012tyt9spg897t76xe?limit=20
+   URL: https://api.a1zap.com/v1/messages/individual/YOUR_AGENT_ID/chat/CHAT_ID?limit=20
    Status: 500
    Status Text: Internal Server Error
 ```
@@ -17,7 +17,7 @@ The makeup artist agent was using the **general `a1zapClient`** which was config
 
 When the webhook tried to fetch message history, it was:
 1. Using the API key from the general a1zap config
-2. But requesting messages for agent ID `j974khr39n4esba376mjawp2jh7t69f3` (from webhook payload)
+2. But requesting messages for agent ID (from webhook payload)
 3. This **authentication mismatch** caused the A1Zap API to return a 500 error
 
 ## Solution
@@ -30,7 +30,7 @@ Created a **dedicated makeup artist client** similar to how Brandon Eats has its
 // Makeup Artist Specific A1Zap Configuration
 makeupArtist: {
   apiKey: process.env.MAKEUP_ARTIST_API_KEY || process.env.A1ZAP_API_KEY || 'your_makeup_artist_api_key_here',
-  agentId: process.env.MAKEUP_ARTIST_AGENT_ID || 'j974khr39n4esba376mjawp2jh7t69f3',
+  agentId: process.env.MAKEUP_ARTIST_AGENT_ID || 'your_makeup_artist_agent_id_here',
   apiUrl: process.env.MAKEUP_ARTIST_API_URL || 'https://api.a1zap.com/v1/messages/individual'
 }
 ```
@@ -59,8 +59,8 @@ Set the following environment variables for the makeup artist agent:
 # Required: Makeup Artist API Key
 MAKEUP_ARTIST_API_KEY=your_makeup_artist_api_key_here
 
-# Optional: Makeup Artist Agent ID (defaults to j974khr39n4esba376mjawp2jh7t69f3)
-MAKEUP_ARTIST_AGENT_ID=j974khr39n4esba376mjawp2jh7t69f3
+# Optional: Makeup Artist Agent ID
+MAKEUP_ARTIST_AGENT_ID=your_makeup_artist_agent_id_here
 ```
 
 **Note**: If `MAKEUP_ARTIST_API_KEY` is not set, it will fall back to `A1ZAP_API_KEY`. However, this is NOT recommended if you're using multiple agents with different credentials.
@@ -95,7 +95,7 @@ To test the fix:
 1. Set the environment variables:
    ```bash
    export MAKEUP_ARTIST_API_KEY="your_api_key"
-   export MAKEUP_ARTIST_AGENT_ID="j974khr39n4esba376mjawp2jh7t69f3"
+   export MAKEUP_ARTIST_AGENT_ID="your_agent_id"
    ```
 
 2. Restart your server
@@ -105,9 +105,9 @@ To test the fix:
 4. Check the console logs - you should see:
    ```
    📡 Fetching Makeup Artist message history:
-      URL: https://api.a1zap.com/v1/messages/individual/j974khr39n4esba376mjawp2jh7t69f3/chat/...
-      Using configured agent ID: j974khr39n4esba376mjawp2jh7t69f3
-      API Key: YUVV5Cgr...
+      URL: https://api.a1zap.com/v1/messages/individual/YOUR_AGENT_ID/chat/...
+      Using configured agent ID: YOUR_AGENT_ID
+      API Key: YOUR_KEY...
    ✅ Message history retrieved: X messages
    ```
 

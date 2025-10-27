@@ -17,7 +17,7 @@ Result: Generic makeup, "casino Royale glam" request ignored
 ### Issue 2: Message History Fetch Failing
 The A1Zap API was returning "Internal server error" when trying to fetch message history. This was because:
 - The default `a1zapClient` was initialized with a generic agent ID from config
-- The makeup artist webhook receives a different agent ID in the payload (`j974khr39n4esba376mjawp2jh7t69f3`)
+- The makeup artist webhook receives a different agent ID in the payload
 - `getMessageHistory()` was using the wrong agent ID (`this.agentId` from config instead of the payload's agent ID)
 - API rightfully rejected the mismatched agent ID/chat combination
 

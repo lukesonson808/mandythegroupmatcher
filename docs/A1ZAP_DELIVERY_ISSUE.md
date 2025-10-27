@@ -9,8 +9,8 @@ Your webhook and code are **working correctly**. The issue is with A1Zap's API.
 ### 1. Webhook Received (10:47:53)
 ```json
 {
-  "chat": { "id": "m97b9r4wc0bsth1artk5dm05h17t7cra" },
-  "agent": { "id": "j974khr39n4esba376mjawp2jh7t69f3" },
+  "chat": { "id": "CHAT_ID" },
+  "agent": { "id": "YOUR_AGENT_ID" },
   "message": { "media": { "url": "..." } }
 }
 ```
@@ -23,9 +23,9 @@ Your webhook and code are **working correctly**. The issue is with A1Zap's API.
 
 ### 3. Message Sent to A1Zap (10:48:07)
 ```json
-POST https://api.a1zap.com/v1/messages/individual/j974khr39n4esba376mjawp2jh7t69f3/send
+POST https://api.a1zap.com/v1/messages/individual/YOUR_AGENT_ID/send
 {
-  "chatId": "m97b9r4wc0bsth1artk5dm05h17t7cra",
+  "chatId": "CHAT_ID",
   "content": "I've applied a natural makeup look...",
   "media": {
     "url": "https://a1base-demo-1.ngrok.app/temp-images/makeup_1761475686471_4a7be58b575c1ea3.png",
@@ -98,9 +98,9 @@ If the message doesn't appear in WhatsApp:
 **Evidence to provide**:
 - Message was accepted: `messageId: js7780xdyqxrsw6syc1g76tnah7t6z1e`
 - Timestamp: `2025-10-26T10:48:07.135Z`
-- Chat ID: `m97b9r4wc0bsth1artk5dm05h17t7cra`
-- Agent ID: `j974khr39n4esba376mjawp2jh7t69f3`
-- Image URL: `https://a1base-demo-1.ngrok.app/temp-images/makeup_1761475686471_4a7be58b575c1ea3.png`
+- Chat ID: `CHAT_ID`
+- Agent ID: `YOUR_AGENT_ID`
+- Image URL: `https://your-server.ngrok.app/temp-images/makeup_TIMESTAMP_HASH.png`
 
 **Issues to report**:
 1. Message history API returning "Internal server error"

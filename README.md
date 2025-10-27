@@ -42,7 +42,12 @@ BASE_URL=https://your-repl.repl.co
 npm install
 ```
 
-3. Create `.env` file:
+3. Create `.env` file from the template:
+```bash
+cp .env.example .env
+```
+
+4. Edit `.env` and add your API keys:
 ```bash
 CLAUDE_API_KEY=your_claude_key
 A1ZAP_API_KEY=your_a1zap_key
@@ -50,7 +55,7 @@ A1ZAP_AGENT_ID=your_agent_id
 BASE_URL=http://localhost:3000
 ```
 
-4. Start the server:
+5. Start the server:
 ```bash
 npm start
 ```
