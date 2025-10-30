@@ -6,7 +6,7 @@
  * This will send a test image message and show detailed diagnostics
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 const fs = require('fs');

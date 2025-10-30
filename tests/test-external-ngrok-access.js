@@ -3,7 +3,7 @@
  * This simulates what A1Zap does when trying to fetch your image
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 const fs = require('fs');

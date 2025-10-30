@@ -3,7 +3,7 @@
  * This simulates what happens when the webhook sends an image back
  */
 
-require('dotenv').config();
+
 const a1zapClient = require('../services/a1zap-client');
 const imageStorage = require('../services/image-storage');
 const config = require('../config');

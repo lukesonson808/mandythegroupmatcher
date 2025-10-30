@@ -3,7 +3,7 @@
  * This will help diagnose if the message history API is working
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 

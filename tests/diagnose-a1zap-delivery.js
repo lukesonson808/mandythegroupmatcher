@@ -3,7 +3,7 @@
  * Check if the message was actually sent by querying message history
  */
 
-require('dotenv').config();
+
 const a1zapClient = require('../services/a1zap-client');
 const config = require('../config');
 

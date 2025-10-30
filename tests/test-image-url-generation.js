@@ -2,7 +2,7 @@
  * Test to verify BASE_URL is correctly configured and image URLs are generated properly
  */
 
-require('dotenv').config();
+
 const config = require('../config');
 const imageStorage = require('../services/image-storage');
 

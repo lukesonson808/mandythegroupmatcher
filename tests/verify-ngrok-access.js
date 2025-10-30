@@ -2,7 +2,7 @@
  * Verify that ngrok URL is accessible for serving images
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 
