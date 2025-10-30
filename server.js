@@ -200,6 +200,7 @@ if (allWarnings.length > 0) {
   console.log('');
 }
 
+
 // Display errors
 if (allErrors.length > 0) {
   console.log('❌ Configuration Errors:');

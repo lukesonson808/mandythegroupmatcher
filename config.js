@@ -102,14 +102,11 @@ module.exports = {
      */
     isPlaceholder(value) {
       if (!value) return true;
-      const placeholders = [
+      const placeholder_prefixes = [
         'your_',
         'YOUR_',
-        'undefined',
-        'null',
-        ''
       ];
-      return placeholders.some(p => String(value).startsWith(p));
+      return placeholder_prefixes.some(p => String(value).startsWith(p));
     },
 
     /**
