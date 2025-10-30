@@ -1,5 +1,5 @@
 // Load environment variables
-require('dotenv').config();
+
 
 module.exports = {
   // AI Model Configurations

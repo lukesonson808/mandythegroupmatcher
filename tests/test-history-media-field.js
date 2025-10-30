@@ -7,7 +7,7 @@
  * 3. URL construction is wrong
  */
 
-require('dotenv').config();
+
 const a1zapClient = require('../services/a1zap-client');
 const webhookHelpers = require('../services/webhook-helpers');
 

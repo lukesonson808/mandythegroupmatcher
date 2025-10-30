@@ -3,7 +3,7 @@
  * This sends an actual media message with image URL
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 const fs = require('fs');

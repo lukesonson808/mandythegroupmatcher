@@ -2,7 +2,7 @@
  * Debug script to see what the A1Zap message history API actually returns
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 

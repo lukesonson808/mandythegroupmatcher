@@ -3,7 +3,7 @@
  * This simulates what happens when A1Zap sends a webhook with an image
  */
 
-require('dotenv').config();
+
 const axios = require('axios');
 const config = require('../config');
 const fs = require('fs');
