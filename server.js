@@ -23,6 +23,7 @@ const willWanderForFoodAgent = require('./agents/willwanderforfood-agent');
 const makeupArtistAgent = require('./agents/makeup-artist-agent');
 const ycPhotographerAgent = require('./agents/yc-photographer-agent');
 const zapbankRepAgent = require('./agents/zapbank-rep-agent');
+const richContentDemoAgent = require('./agents/rich-content-demo-agent');
 
 // Webhook handlers
 const claudeWebhookHandler = require('./webhooks/claude-webhook');
@@ -31,6 +32,7 @@ const willWanderForFoodWebhookHandler = require('./webhooks/willwanderforfood-we
 const makeupArtistWebhookHandler = require('./webhooks/makeup-artist-webhook');
 const ycPhotographerWebhookHandler = require('./webhooks/yc-photographer-webhook');
 const zapbankRepWebhookHandler = require('./webhooks/zapbank-rep-webhook');
+const richContentDemoWebhookHandler = require('./webhooks/rich-content-demo-webhook');
 
 // Services
 const { getBaseFileInfo, getAllAgentFiles, listUploadedFiles } = require('./services/file-upload');
@@ -44,6 +46,7 @@ agentRegistry.register('willwanderforfood', willWanderForFoodAgent, willWanderFo
 agentRegistry.register('makeup-artist', makeupArtistAgent, makeupArtistWebhookHandler);
 agentRegistry.register('yc-photographer', ycPhotographerAgent, ycPhotographerWebhookHandler);
 agentRegistry.register('zapbank-rep', zapbankRepAgent, zapbankRepWebhookHandler);
+agentRegistry.register('rich-content-demo', richContentDemoAgent, richContentDemoWebhookHandler);
 
 const app = express();
 
@@ -94,6 +97,7 @@ app.get('/', (req, res) => {
       makeupArtist: 'POST /webhook/makeup-artist',
       ycPhotographer: 'POST /webhook/yc-photographer',
       zapbankRep: 'POST /webhook/zapbank-rep',
+      richContentDemo: 'POST /webhook/rich-content-demo',
       filesBaseAll: 'GET /files/base',
       filesBaseAgent: 'GET /files/base/:agent',
       filesList: 'GET /files/list',
@@ -119,6 +123,9 @@ app.post('/webhook/yc-photographer', ycPhotographerWebhookHandler);
 
 // Zap Bank Rep webhook endpoint
 app.post('/webhook/zapbank-rep', zapbankRepWebhookHandler);
+
+// Rich Content Demo webhook endpoint
+app.post('/webhook/rich-content-demo', richContentDemoWebhookHandler);
 
 // File management endpoints
 app.get('/files/base', (req, res) => {
@@ -233,12 +240,13 @@ const server = app.listen(PORT, HOST, () => {
   agentRegistry.printSummary();
   
   console.log(`Webhook Endpoints:`);
-  console.log(`  POST /webhook/claude          - Claude DocuBot (file-aware agent)`);
-  console.log(`  POST /webhook/brandoneats     - Brandon Eats (data analyst)`);
-  console.log(`  POST /webhook/makeup-artist   - Makeup Artist (image generation)`);
-  console.log(`  POST /webhook/yc-photographer - YC Photographer (image generation)`);
-  console.log(`  POST /webhook/zapbank-rep     - Zap Bank Rep (sales advisor)`);
-  console.log(`  GET  /health                  - Health check`);
+  console.log(`  POST /webhook/claude              - Claude DocuBot (file-aware agent)`);
+  console.log(`  POST /webhook/brandoneats         - Brandon Eats (data analyst)`);
+  console.log(`  POST /webhook/makeup-artist       - Makeup Artist (image generation)`);
+  console.log(`  POST /webhook/yc-photographer     - YC Photographer (image generation)`);
+  console.log(`  POST /webhook/zapbank-rep         - Zap Bank Rep (sales advisor)`);
+  console.log(`  POST /webhook/rich-content-demo   - Rich Content Demo (showcase)`);
+  console.log(`  GET  /health                      - Health check`);
   console.log(`  GET  /files/base              - Get base files for all agents`);
   console.log(`  GET  /files/base/:agent       - Get base file for specific agent`);
   console.log(`  GET  /files/list              - List all uploaded files`);

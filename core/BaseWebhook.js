@@ -257,6 +257,12 @@ class BaseWebhook {
       return;
     }
 
+    // If message was already sent by agent-specific logic, skip sending
+    if (result.sent) {
+      console.log('✅ Message already sent by agent logic');
+      return;
+    }
+
     // If result has an imageUrl, it was already sent by agent-specific logic
     if (result.imageUrl) {
       console.log('✅ Media message already sent by agent logic');

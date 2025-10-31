@@ -61,6 +61,13 @@ module.exports = {
       agentId: process.env.ZAPBANK_REP_AGENT_ID || 'your_zapbank_rep_agent_id_here',
       apiUrl: process.env.ZAPBANK_REP_API_URL || 'https://api.a1zap.com/v1/messages/individual',
       agentName: 'zapbank-rep'
+    },
+
+    richContentDemo: {
+      apiKey: process.env.RICH_CONTENT_DEMO_API_KEY || process.env.A1ZAP_API_KEY || 'your_rich_content_demo_api_key_here',
+      agentId: process.env.RICH_CONTENT_DEMO_AGENT_ID || 'your_rich_content_demo_agent_id_here',
+      apiUrl: process.env.RICH_CONTENT_DEMO_API_URL || 'https://api.a1zap.com/v1/messages/individual',
+      agentName: 'rich-content-demo'
     }
   },
 
