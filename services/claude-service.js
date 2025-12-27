@@ -27,13 +27,21 @@ class ClaudeService {
 
       // File support removed - Mandy doesn't use file references
 
-      const response = await this.client.messages.create({
+      // Add timeout (default 10 seconds, can be overridden)
+      const timeoutMs = options.timeout || 10000;
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Claude API call timed out after ${timeoutMs}ms`)), timeoutMs)
+      );
+
+      const apiCall = this.client.messages.create({
         model: options.model || config.claude.defaultModel,
         max_tokens: options.maxTokens || config.claude.maxTokens,
         temperature: options.temperature !== undefined ? options.temperature : config.claude.temperature,
         system: options.systemPrompt || undefined,
         messages: messages
       });
+
+      const response = await Promise.race([apiCall, timeoutPromise]);
 
       return response.content[0].text;
     } catch (error) {
@@ -67,13 +75,21 @@ class ClaudeService {
         };
       });
 
-      const response = await this.client.messages.create({
+      // Add timeout (default 10 seconds, can be overridden)
+      const timeoutMs = options.timeout || 10000;
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Claude API call timed out after ${timeoutMs}ms`)), timeoutMs)
+      );
+
+      const apiCall = this.client.messages.create({
         model: options.model || config.claude.defaultModel,
         max_tokens: options.maxTokens || config.claude.maxTokens,
         temperature: options.temperature !== undefined ? options.temperature : config.claude.temperature,
         system: options.systemPrompt || undefined,
         messages: claudeMessages
       });
+
+      const response = await Promise.race([apiCall, timeoutPromise]);
 
       return response.content[0].text;
     } catch (error) {

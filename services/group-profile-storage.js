@@ -180,6 +180,16 @@ function getProfileByGroupName(groupName) {
 }
 
 /**
+ * Get a profile by chat ID
+ * @param {string} chatId - Chat ID
+ * @returns {Object|null} Profile or null
+ */
+function getProfileByChatId(chatId) {
+  const profiles = loadProfiles();
+  return profiles.groups.find(g => g.chatId === chatId) || null;
+}
+
+/**
  * Load matches from file
  * @returns {Object} { matches: Array }
  */
@@ -281,6 +291,110 @@ function getStats() {
   };
 }
 
+/**
+ * Get group response state for a chat
+ * Tracks which users have responded to each question
+ * @param {string} chatId - Chat ID
+ * @returns {Object|null} Group response state or null
+ */
+function getGroupResponseState(chatId) {
+  const state = loadState();
+  return state[chatId]?.groupResponseState || null;
+}
+
+/**
+ * Set group response state for a chat
+ * @param {string} chatId - Chat ID
+ * @param {Object} responseState - Group response state object
+ */
+function setGroupResponseState(chatId, responseState) {
+  const state = loadState();
+  if (!state[chatId]) {
+    state[chatId] = {};
+  }
+  state[chatId].groupResponseState = responseState;
+  saveState(state);
+}
+
+/**
+ * Initialize group response tracking
+ * @param {string} chatId - Chat ID
+ * @param {number} groupSize - Number of people in the group
+ * @param {Array<string>} userIds - Array of user IDs in the group
+ */
+function initializeGroupResponseTracking(chatId, groupSize, userIds) {
+  const responseState = {
+    groupSize,
+    userIds: userIds || [],
+    currentQuestionNumber: 0,
+    responses: {} // questionNumber -> { [userId]: response }
+  };
+  setGroupResponseState(chatId, responseState);
+}
+
+/**
+ * Record a user's response to the current question
+ * @param {string} chatId - Chat ID
+ * @param {string} userId - User ID who responded
+ * @param {string} response - The user's response text
+ * @returns {Object} { allResponded: boolean, remainingCount: number }
+ */
+function recordUserResponse(chatId, userId, response) {
+  const state = loadState();
+  if (!state[chatId]?.groupResponseState) {
+    return { allResponded: false, remainingCount: -1 };
+  }
+  
+  const responseState = state[chatId].groupResponseState;
+  const questionNum = responseState.currentQuestionNumber;
+  
+  if (!responseState.responses[questionNum]) {
+    responseState.responses[questionNum] = {};
+  }
+  
+  responseState.responses[questionNum][userId] = response;
+  
+  // Count how many unique users have responded
+  const respondedUsers = Object.keys(responseState.responses[questionNum]);
+  const remainingCount = responseState.groupSize - respondedUsers.length;
+  const allResponded = remainingCount <= 0;
+  
+  setGroupResponseState(chatId, responseState);
+  
+  return { allResponded, remainingCount, respondedUsers };
+}
+
+/**
+ * Move to the next question
+ * @param {string} chatId - Chat ID
+ */
+function moveToNextQuestion(chatId) {
+  const state = loadState();
+  if (!state[chatId]?.groupResponseState) {
+    return;
+  }
+  
+  const responseState = state[chatId].groupResponseState;
+  responseState.currentQuestionNumber += 1;
+  setGroupResponseState(chatId, responseState);
+}
+
+/**
+ * Get responses for the current question
+ * @param {string} chatId - Chat ID
+ * @returns {Object|null} Object mapping userId to response, or null
+ */
+function getCurrentQuestionResponses(chatId) {
+  const state = loadState();
+  if (!state[chatId]?.groupResponseState) {
+    return null;
+  }
+  
+  const responseState = state[chatId].groupResponseState;
+  const questionNum = responseState.currentQuestionNumber;
+  return responseState.responses[questionNum] || null;
+}
+
 module.exports = {
   getInterviewState,
   setInterviewState,
@@ -289,9 +403,16 @@ module.exports = {
   saveGroupProfile,
   getAllProfiles,
   getProfileByGroupName,
+  getProfileByChatId,
   saveMatch,
   getAllMatches,
   getMatchesForGroup,
-  getStats
+  getStats,
+  getGroupResponseState,
+  setGroupResponseState,
+  initializeGroupResponseTracking,
+  recordUserResponse,
+  moveToNextQuestion,
+  getCurrentQuestionResponses
 };
 

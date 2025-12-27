@@ -91,15 +91,48 @@ class BaseA1ZapClient {
       console.log(`  -d '${JSON.stringify(payload)}'`);
       console.log(`${'='.repeat(80)}\n`);
 
-      const response = await axios.post(url, payload, {
-        headers: {
-          'X-API-Key': this.apiKey,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Retry logic for transient errors (5xx, network errors)
+      let lastError;
+      const maxRetries = 3;
+      const retryDelay = 1000; // 1 second
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await axios.post(url, payload, {
+            headers: {
+              'X-API-Key': this.apiKey,
+              'Content-Type': 'application/json'
+            },
+            timeout: 10000 // 10 second timeout
+          });
 
-      console.log(`✅ [${this.agentName}] Message sent to A1Zap:`, response.data);
-      return response.data;
+          console.log(`✅ [${this.agentName}] Message sent to A1Zap:`, response.data);
+          return response.data;
+        } catch (error) {
+          lastError = error;
+          
+          // Check if it's a retryable error
+          const isRetryable = 
+            (error.response && error.response.status >= 500) || // 5xx errors
+            (error.response && error.response.status === 429) || // Rate limit
+            error.code === 'ECONNRESET' ||
+            error.code === 'ETIMEDOUT' ||
+            error.code === 'ENOTFOUND';
+          
+          if (isRetryable && attempt < maxRetries) {
+            const delay = retryDelay * attempt; // Exponential backoff
+            console.warn(`⚠️  [${this.agentName}] Attempt ${attempt}/${maxRetries} failed (${error.response?.status || error.code}), retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          // Not retryable or out of retries - throw the error
+          throw error;
+        }
+      }
+      
+      // Should never reach here, but just in case
+      throw lastError;
     } catch (error) {
       console.error(`\n${'='.repeat(80)}`);
       console.error(`❌ [${this.agentName}] Error sending message to A1Zap`);

@@ -5,10 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "npx @dotenvx/dotenvx run -f .env -- nodemon server.js",
-    "check": "npx @dotenvx/dotenvx run -f .env -- node check-config.js",
-    "test-connections": "npx @dotenvx/dotenvx run -f .env -- node test-connections.js",
-    "upload": "npx @dotenvx/dotenvx run -f .env -- node examples/upload.js"
+    "dev": "npx @dotenvx/dotenvx run -f .env -- nodemon server.js"
   },
   "repository": {
     "type": "git",
