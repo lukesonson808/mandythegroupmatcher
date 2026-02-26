@@ -33,6 +33,21 @@
 const claudeService = require('./claude-service');
 const groupProfileStorage = require('./group-profile-storage');
 
+function safeLower(value) {
+  return String(value ?? '').toLowerCase();
+}
+
+function getGroupDisplayName(group) {
+  if (!group || typeof group !== 'object') return 'Unknown';
+  return (
+    group.groupName ||
+    group.name ||
+    group.group_name ||
+    (group.answers && (group.answers.question1 || group.answers.q1)) ||
+    'Unknown'
+  );
+}
+
 /**
  * Helper to get answer value (handles both old and new format)
  */
@@ -109,8 +124,8 @@ function calculateQuantitativeScore(group1, group2) {
 
   // Factor 2: Music Taste Similarity (25% weight)
   // Groups with similar music taste often have compatible vibes
-  const music1 = (getAnswer(group1, 5) || '').toLowerCase().trim();
-  const music2 = (getAnswer(group2, 5) || '').toLowerCase().trim();
+  const music1 = String(getAnswer(group1, 5) || '').toLowerCase().trim();
+  const music2 = String(getAnswer(group2, 5) || '').toLowerCase().trim();
   
   if (music1 && music2) {
     let musicScore = 0;
@@ -153,8 +168,8 @@ function calculateQuantitativeScore(group1, group2) {
 
   // Factor 3: Activity/Interest Similarity (25% weight)
   // Based on "ideal day" - groups with similar ideal days often get along
-  const idealDay1 = (getAnswer(group1, 3) || '').toLowerCase();
-  const idealDay2 = (getAnswer(group2, 3) || '').toLowerCase();
+  const idealDay1 = String(getAnswer(group1, 3) || '').toLowerCase();
+  const idealDay2 = String(getAnswer(group2, 3) || '').toLowerCase();
   
   if (idealDay1 && idealDay2) {
     let activityScore = 0;
@@ -198,8 +213,8 @@ function calculateQuantitativeScore(group1, group2) {
   }
 
   // Factor 4: Emoji/Vibe Similarity (10% weight - lower priority)
-  const emoji1 = (getAnswer(group1, 8) || '').toLowerCase().trim();
-  const emoji2 = (getAnswer(group2, 8) || '').toLowerCase().trim();
+  const emoji1 = String(getAnswer(group1, 8) || '').toLowerCase().trim();
+  const emoji2 = String(getAnswer(group2, 8) || '').toLowerCase().trim();
   
   if (emoji1 && emoji2) {
     const emojiScore = emoji1 === emoji2 ? 0.8 : 0.3;
@@ -224,16 +239,40 @@ async function calculateQualitativeScore(group1, group2) {
   const size1 = size1Raw ? parseInt(size1Raw.toString().match(/\d+/)?.[0] || size1Raw) || 0 : 0;
   const size2 = size2Raw ? parseInt(size2Raw.toString().match(/\d+/)?.[0] || size2Raw) || 0 : 0;
   
+  // Extract mini app data if available
+  const miniAppData1 = group1.miniAppData || {};
+  const miniAppData2 = group2.miniAppData || {};
+  const hasMiniAppData1 = Object.keys(miniAppData1).length > 0;
+  const hasMiniAppData2 = Object.keys(miniAppData2).length > 0;
+  
+  let miniAppSection = '';
+  if (hasMiniAppData1 || hasMiniAppData2) {
+    miniAppSection = '\n\nMINI APP DATA (if available, use this to find shared preferences/behaviors):\n';
+    if (hasMiniAppData1) {
+      miniAppSection += `Group 1 Mini App Data: ${JSON.stringify(miniAppData1, null, 2)}\n`;
+    } else {
+      miniAppSection += 'Group 1: No mini app data available\n';
+    }
+    if (hasMiniAppData2) {
+      miniAppSection += `Group 2 Mini App Data: ${JSON.stringify(miniAppData2, null, 2)}\n`;
+    } else {
+      miniAppSection += 'Group 2: No mini app data available\n';
+    }
+    miniAppSection += '- Look for shared preferences, similar choices, or complementary behaviors in mini app data\n';
+    miniAppSection += '- If both groups have mini app data, add +5-20 points for strong alignment\n';
+  }
+  
   const comparisonPrompt = `You are analyzing two groups for compatibility in a matchmaking system (like blocking groups at Harvard).
 
 CRITICAL PRIORITIES (in order):
 1. Group Size Similarity - Groups with similar sizes should score MUCH higher (e.g., 3 vs 3 = excellent, 3 vs 4 = very good, 3 vs 8 = poor)
 2. Shared Interests - Groups with similar interests (music, activities, references) should score higher
-3. Cultural Fit - Similar vibes, energy levels, and values
-4. Complementary Personalities - Groups that would balance each other well
+3. Mini App Data Alignment - If both groups have mini app data, use it to find shared preferences and behaviors
+4. Cultural Fit - Similar vibes, energy levels, and values
+5. Complementary Personalities - Groups that would balance each other well
 
 Group 1:
-- Name: ${group1.groupName}
+- Name: ${getGroupDisplayName(group1)}
 - Group Size: ${size1} ${size1 === 1 ? 'person' : 'people'}
 - Ideal Day: ${getAnswer(group1, 3) || 'N/A'}
 - Fiction Group: ${getAnswer(group1, 4) || 'N/A'}
@@ -245,7 +284,7 @@ Group 1:
 - Side Quest: ${getAnswer(group1, 10) || 'N/A'}
 
 Group 2:
-- Name: ${group2.groupName}
+- Name: ${getGroupDisplayName(group2)}
 - Group Size: ${size2} ${size2 === 1 ? 'person' : 'people'}
 - Ideal Day: ${getAnswer(group2, 3) || 'N/A'}
 - Fiction Group: ${getAnswer(group2, 4) || 'N/A'}
@@ -254,13 +293,14 @@ Group 2:
 - Origin Story: ${getAnswer(group2, 7) || 'N/A'}
 - Emoji: ${getAnswer(group2, 8) || 'N/A'}
 - Roman Empire: ${getAnswer(group2, 9) || 'N/A'}
-- Side Quest: ${getAnswer(group2, 10) || 'N/A'}
+- Side Quest: ${getAnswer(group2, 10) || 'N/A'}${miniAppSection}
 
 SCORING GUIDELINES:
 - Groups with same/similar sizes (difference ≤ 1): Start at 70-100 base
 - Groups with moderate size difference (2-3): Start at 50-70 base
 - Groups with large size difference (4+): Start at 30-50 base, reduce further if interests don't align
 - Add points for shared interests (music, activities, references): +5-15 points each
+- Add points for mini app data alignment (if both have data): +5-20 points
 - Add points for cultural fit: +5-10 points
 - Subtract points for conflicting vibes: -5-10 points
 
@@ -353,7 +393,7 @@ async function findMatchesForGroup(groupName, limit = 5) {
 
   for (const group of allProfiles) {
     // Skip self
-    if (group.groupName.toLowerCase() === groupName.toLowerCase()) {
+    if (safeLower(getGroupDisplayName(group)) === safeLower(groupName)) {
       continue;
     }
 

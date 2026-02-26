@@ -56,7 +56,12 @@ class BaseA1ZapClient {
    */
   async sendMessage(chatId, content, richContentBlocks = null) {
     try {
-      this._validateApiKey();
+      // Local testing mode: don't call A1Zap, just log payload and return a mock response.
+      // Usage: A1ZAP_DRY_RUN=true node server.js
+      const isDryRun = String(process.env.A1ZAP_DRY_RUN || '').toLowerCase() === 'true';
+      if (!isDryRun) {
+        this._validateApiKey();
+      }
 
       const url = `${this.apiUrl}/${this.agentId}/send`;
 
@@ -73,23 +78,19 @@ class BaseA1ZapClient {
         payload.richContentBlocks = richContentBlocks;
       }
 
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`📤 [${this.agentName}] Sending text message`);
-      console.log(`${'='.repeat(80)}`);
-      console.log(`URL: ${url}`);
-      console.log(`Method: POST`);
-      console.log(`Payload:`, JSON.stringify(payload, null, 2));
-      
-      const maskedKey = this.apiKey.length > 12 
-        ? `${this.apiKey.substring(0, 8)}...${this.apiKey.substring(this.apiKey.length - 4)}`
-        : '***masked***';
-      
-      console.log(`\n🔧 Curl equivalent:`);
-      console.log(`curl -X POST '${url}' \\`);
-      console.log(`  -H 'X-API-Key: YOUR_API_KEY_HERE' \\`);
-      console.log(`  -H 'Content-Type: application/json' \\`);
-      console.log(`  -d '${JSON.stringify(payload)}'`);
-      console.log(`${'='.repeat(80)}\n`);
+      const blockCount = richContentBlocks?.length || 0;
+      console.log(`📤 [${this.agentName}] Sending message with ${blockCount} rich content blocks...`);
+
+      if (isDryRun) {
+        console.log(`🧪 [${this.agentName}] A1ZAP_DRY_RUN=true → not sending to A1Zap. Returning mock success.\n`);
+        return {
+          ok: true,
+          dryRun: true,
+          chatId,
+          sentAt: new Date().toISOString(),
+          payload
+        };
+      }
 
       // Retry logic for transient errors (5xx, network errors)
       let lastError;

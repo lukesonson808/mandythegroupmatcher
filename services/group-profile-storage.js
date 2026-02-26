@@ -15,6 +15,25 @@ const PROFILES_FILE = path.join(DATA_DIR, 'group-profiles.json');
 const STATE_FILE = path.join(DATA_DIR, 'interview-state.json');
 const MATCHES_FILE = path.join(DATA_DIR, 'matches.json');
 
+function safeLower(value) {
+  return String(value ?? '').toLowerCase();
+}
+
+function normalizeGroupName(profile) {
+  if (!profile || typeof profile !== 'object') return profile;
+  const groupName =
+    profile.groupName ||
+    profile.name ||
+    profile.group_name ||
+    profile.answers?.question1 ||
+    profile.answers?.q1;
+
+  if (groupName && !profile.groupName) {
+    return { ...profile, groupName };
+  }
+  return profile;
+}
+
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -130,8 +149,9 @@ function clearInterviewState(chatId) {
  */
 function groupNameExists(groupName) {
   const profiles = loadProfiles();
+  if (!groupName) return false;
   return profiles.groups.some(g => 
-    g.groupName && g.groupName.toLowerCase() === groupName.toLowerCase()
+    g.groupName && safeLower(g.groupName) === safeLower(groupName)
   );
 }
 
@@ -164,7 +184,7 @@ function saveGroupProfile(profile) {
  */
 function getAllProfiles() {
   const profiles = loadProfiles();
-  return profiles.groups || [];
+  return (profiles.groups || []).map(normalizeGroupName);
 }
 
 /**
@@ -174,8 +194,9 @@ function getAllProfiles() {
  */
 function getProfileByGroupName(groupName) {
   const profiles = loadProfiles();
+  if (!groupName) return null;
   return profiles.groups.find(g => 
-    g.groupName && g.groupName.toLowerCase() === groupName.toLowerCase()
+    g.groupName && safeLower(g.groupName) === safeLower(groupName)
   ) || null;
 }
 
@@ -187,6 +208,115 @@ function getProfileByGroupName(groupName) {
 function getProfileByChatId(chatId) {
   const profiles = loadProfiles();
   return profiles.groups.find(g => g.chatId === chatId) || null;
+}
+
+/**
+ * Get a profile by group name and email (or chatId)
+ * Uses composite key to prevent groups with same name but different emails from overwriting each other
+ * @param {string} groupName - Group name
+ * @param {string} email - Email address (optional)
+ * @param {string} chatId - Chat ID (optional, takes precedence over email)
+ * @returns {Object|null} Profile or null
+ */
+function getProfileByCompositeKey(groupName, email = null, chatId = null) {
+  const profiles = loadProfiles();
+  if (!groupName && !chatId) return null;
+  
+  // If chatId is provided, use it as primary identifier
+  if (chatId) {
+    const byChatId = profiles.groups.find(g => g.chatId === chatId);
+    if (byChatId) return byChatId;
+  }
+  
+  // Otherwise, match by name + email
+  if (email) {
+    const byNameAndEmail = profiles.groups.find(g => 
+      g.groupName && safeLower(g.groupName) === safeLower(groupName) &&
+      g.email && safeLower(g.email) === safeLower(email)
+    );
+    if (byNameAndEmail) return byNameAndEmail;
+  }
+  
+  // Fallback to name only (for backward compatibility)
+  return profiles.groups.find(g => 
+    g.groupName && safeLower(g.groupName) === safeLower(groupName)
+  ) || null;
+}
+
+/**
+ * Update an existing group profile
+ * @param {string} groupName - Group name to update
+ * @param {Object} updates - Fields to update
+ * @param {string} email - Email address (optional, for composite key)
+ * @param {string} chatId - Chat ID (optional, takes precedence over email)
+ * @returns {Object|null} Updated profile or null if not found
+ */
+function updateGroupProfile(groupName, updates, email = null, chatId = null) {
+  const profiles = loadProfiles();
+  if (!groupName && !chatId) return null;
+  
+  let groupIndex = -1;
+  
+  // If chatId is provided, use it as primary identifier
+  if (chatId) {
+    groupIndex = profiles.groups.findIndex(g => g.chatId === chatId);
+  }
+  
+  // Otherwise, match by name + email
+  if (groupIndex === -1 && email) {
+    groupIndex = profiles.groups.findIndex(g => 
+      g.groupName && safeLower(g.groupName) === safeLower(groupName) &&
+      g.email && safeLower(g.email) === safeLower(email)
+    );
+  }
+  
+  // Fallback to name only (for backward compatibility)
+  if (groupIndex === -1) {
+    groupIndex = profiles.groups.findIndex(g => 
+      g.groupName && safeLower(g.groupName) === safeLower(groupName)
+    );
+  }
+  
+  if (groupIndex === -1) {
+    return null;
+  }
+  
+  // Update the profile
+  profiles.groups[groupIndex] = {
+    ...profiles.groups[groupIndex],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  
+  saveProfiles(profiles);
+  console.log(`✅ Updated group profile: ${groupName}${email ? ` (${email})` : ''}`);
+  return profiles.groups[groupIndex];
+}
+
+/**
+ * Update an existing profile
+ * @param {string} chatId - Chat ID
+ * @param {Object} updates - Fields to update
+ * @returns {Object|null} Updated profile or null if not found
+ */
+function updateProfile(chatId, updates) {
+  const profiles = loadProfiles();
+  const profileIndex = profiles.groups.findIndex(g => g.chatId === chatId);
+  
+  if (profileIndex === -1) {
+    return null;
+  }
+  
+  // Merge updates
+  profiles.groups[profileIndex] = {
+    ...profiles.groups[profileIndex],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  
+  saveProfiles(profiles);
+  console.log(`✅ Updated profile for chat ${chatId}`);
+  return profiles.groups[profileIndex];
 }
 
 /**
@@ -264,9 +394,10 @@ function getAllMatches() {
  */
 function getMatchesForGroup(groupName) {
   const allMatches = getAllMatches();
+  if (!groupName) return [];
   return allMatches.filter(m => 
-    m.group1Name.toLowerCase() === groupName.toLowerCase() ||
-    m.group2Name.toLowerCase() === groupName.toLowerCase()
+    safeLower(m.group1Name) === safeLower(groupName) ||
+    safeLower(m.group2Name) === safeLower(groupName)
   );
 }
 
@@ -396,6 +527,7 @@ function getCurrentQuestionResponses(chatId) {
 }
 
 module.exports = {
+  updateGroupProfile,
   getInterviewState,
   setInterviewState,
   clearInterviewState,
@@ -404,6 +536,8 @@ module.exports = {
   getAllProfiles,
   getProfileByGroupName,
   getProfileByChatId,
+  getProfileByCompositeKey,
+  updateProfile,
   saveMatch,
   getAllMatches,
   getMatchesForGroup,

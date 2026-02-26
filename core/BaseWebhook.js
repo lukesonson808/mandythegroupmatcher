@@ -150,12 +150,15 @@ class BaseWebhook {
 
           // Step 5c: Send response (with error handling but don't fail completely)
           try {
-            if (result && result.response) {
+            // Skip if already sent or if response is null/empty
+            if (result && result.sent) {
+              console.log(`✅ [${this.agent.name}] Message already sent by agent logic - skipping`);
+            } else if (result && result.response && result.response.trim().length > 0) {
               console.log(`📤 [${this.agent.name}] Sending response (length: ${result.response.length} chars)`);
               await this.sendResponse(data.chatId, result);
               console.log(`✅ [${this.agent.name}] Async processing completed for message ${data.messageId}`);
             } else {
-              console.error(`❌ [${this.agent.name}] No response in result object!`, JSON.stringify(result, null, 2));
+              console.log(`⚠️  [${this.agent.name}] No response to send (null/empty or already sent)`);
             }
           } catch (sendError) {
             console.error(`❌ [${this.agent.name}] Error sending response:`, sendError.message);

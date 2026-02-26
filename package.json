@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "npx @dotenvx/dotenvx run -f .env -- nodemon server.js"
+    "dev": "nodemon server.js",
+    "dev:dotenvx": "dotenvx run -- nodemon server.js"
   },
   "repository": {
     "type": "git",

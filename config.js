@@ -19,6 +19,11 @@ module.exports = {
     betaHeaders: ['files-api-2025-04-14']
   },
 
+  // Yelp API configuration for activity planning
+  yelp: {
+    apiKey: process.env.YELP_API_KEY || 'your_yelp_api_key_here'
+  },
+
   // Mandy agent configuration (legacy compatibility)
   mandy: {
     apiKey: process.env.A1ZAP_API_KEY || 'your_a1zap_api_key_here',
@@ -81,7 +86,60 @@ module.exports = {
       apiKey: process.env.A1ZAP_API_KEY || 'your_a1zap_api_key_here',
       agentId: process.env.MANDY_AGENT_ID || 'your_mandy_agent_id_here',
       apiUrl: 'https://api.a1zap.com/v1/messages/individual',
-      agentName: 'mandy'
+      agentName: 'mandy',
+      // Mini App configuration - includes metadata for rich content blocks
+      // Each mini app needs: id, handle, name (and optionally iconUrl, description)
+      miniApps: {
+        // NOTE: If you don't have handles/names yet, we set safe placeholders.
+        // A1Zap instance cards require `handle` + `name` in the rich content block.
+        // If you later provide real handles/names, swap them in here.
+
+        miniApp01: {
+          id: process.env.MINI_APP_01_ID || 'xs7dh4w4ckmthbezzfdd7z4ww97ya0jn',
+          handle: process.env.MINI_APP_01_HANDLE || 'click-splosion',
+          name: process.env.MINI_APP_01_NAME || 'Click Splosion'
+        },
+        miniApp03: {
+          id: process.env.MINI_APP_03_ID || 'xs79kqye9wqyk0faf582qf7cjn7ybef5',
+          handle: process.env.MINI_APP_03_HANDLE || 'smoothy-ship',
+          name: process.env.MINI_APP_03_NAME || 'Smoothy Ship'
+        },
+        miniApp12: {
+          id: process.env.MINI_APP_12_ID || 'xs74n3mf1fb9qqr7xsky0wfkxx7yfgxq',
+          handle: process.env.MINI_APP_12_HANDLE || 'swamp-digger',
+          name: process.env.MINI_APP_12_NAME || 'Swamp Digger'
+        },
+        miniApp16: {
+          id: process.env.MINI_APP_16_ID || 'xs7ewa9qdjqmfe11adhhetb57x80hxs6',
+          handle: process.env.MINI_APP_16_HANDLE || 'lie-reveal-tho1',
+          name: process.env.MINI_APP_16_NAME || 'Lie Reveal'
+        },
+        miniApp17: {
+          id: process.env.MINI_APP_17_ID || 'xs7bjn2zrsttxhawz9p90r6rrh7ybp5x',
+          handle: process.env.MINI_APP_17_HANDLE || 'fluid-flows',
+          name: process.env.MINI_APP_17_NAME || 'Fluid Flows'
+        },
+        miniApp18: {
+          id: process.env.MINI_APP_18_ID || 'xs7c0c44mgrj2ggj7cayj3ekbd7zkdj9',
+          handle: process.env.MINI_APP_18_HANDLE || 'goal-rush',
+          name: process.env.MINI_APP_18_NAME || 'Goal Rush'
+        },
+        miniApp19: {
+          id: process.env.MINI_APP_19_ID || 'xs74c1p1yz0551h5hc649dvqdn7yfaab',
+          handle: process.env.MINI_APP_19_HANDLE || 'reel-deal',
+          name: process.env.MINI_APP_19_NAME || 'Reel Deal'
+        },
+        miniApp20: {
+          id: process.env.MINI_APP_20_ID || 'xs7742w95vcw17byrr7vgsjksx7wwnmb',
+          handle: process.env.MINI_APP_20_HANDLE || 'flappy-95',
+          name: process.env.MINI_APP_20_NAME || 'Flappy 95'
+        },
+        miniApp21: {
+          id: process.env.MINI_APP_21_ID || 'xs7a9db6143badvgv018z0kgwx80t1e7',
+          handle: process.env.MINI_APP_21_HANDLE || 'name-crossword',
+          name: process.env.MINI_APP_21_NAME || 'Name Crossword'
+        }
+      }
     }
   },
 
